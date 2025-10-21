@@ -32,6 +32,7 @@ class DMXSystem:
         self.infile = 'input.txt'
         self.NEW_VALUE = None
         self.OLD_VALUE = None
+        self.controller = None
         self._initialized = True
 
     # --- Sprava spojeni --------------
@@ -45,6 +46,11 @@ class DMXSystem:
 
     def disconnect(self):
         self.client.close()
+
+    # --- Metody controlleru ----------
+    def set_controller(self, controller):
+        self.controller = controller
+        print(f"[DMXSystem] Controller nastaven: {controller}")
 
     # --- DMX management methods ------
 

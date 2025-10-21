@@ -1,33 +1,50 @@
+from misc import *
 from dmx_system import DMXSystem
-from functions import read_variable_from_file
+from dmx_controller import DMXController
+from dmx_error import DMXErrorManager
 import time
 
 
 # ----- Setup -------------------------
 dmx = DMXSystem(ip="192.168.8.60", port=502, unit=1)
 dmx.connect()
+
+# Inicializace správce chyb
+dmx.error_manager = DMXErrorManager()
+
+# Inicializace controlleru
+controller = DMXController(dmx)
+dmx.set_controller(controller)
+
+# Inicializace zařízení
 front_light = dmx.add_device("FrontLight", start_channel=101, channel_count=4)
 motor = dmx.add_device("Motor", start_channel=105, channel_count=2) # TODO not used
 
+# Paměť poslední hodnoty JSON
+OLD_JSON = None
+
 
 # ----- Loop --------------------------
-OLD_VALUE = None
 try:
     while True:
         time.sleep(0.25)  # perioda kontroly
-        NEW_VALUE = read_variable_from_file("input.txt")
-        if NEW_VALUE is None:
+
+        # Čtení JSON příkazu ze souboru
+        NEW_JSON = read_variable_from_file("input.txt")
+        if NEW_JSON is None:
             continue
 
-        if NEW_VALUE != OLD_VALUE:
-            print(f"Změna detekována: {OLD_VALUE} -> {NEW_VALUE}")
+        # Pokud se JSON změnil
+        if NEW_JSON != OLD_JSON:
+            print(f"[MAIN] Nový příkaz: {NEW_JSON}")
 
-            # zápis do všech kanálů FrontLight
-            front_light.write([NEW_VALUE] * front_light.channel_count)
-            # případně zápis i do motoru
-            OLD_VALUE = NEW_VALUE
+            # Předání příkazu controlleru přímo
+            controller.handle_command(NEW_JSON)
+
+            OLD_JSON = NEW_JSON
 
 except KeyboardInterrupt:
-    print("Ukončuji smyčku...")
+    print("[MAIN] Ukončuji smyčku...")
 finally:
     dmx.disconnect()
+    print("[MAIN] Spojení s DMX uzavřeno.")

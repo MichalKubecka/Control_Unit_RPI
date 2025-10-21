@@ -16,7 +16,7 @@ class DMXDevice:
         Zapíše všechny hodnoty zařízení do systému.
         """
         if len(values) != self.channel_count:
-            raise ValueError("Počet hodnot neodpovídá počtu kanálů zařízení.")
+            raise ValueError(f"[DMXDevice:{self.name}] Počet hodnot neodpovídá počtu kanálů zařízení.")
         self.system.write_channels(self.start_channel, values)
         self.values = values
         print(f"[{self.name}] Zápis: {self.values}")
@@ -27,7 +27,8 @@ class DMXDevice:
         Zapíše hodnotu do jednoho kanálu zařízení.
         """
         if not (0 <= index < self.channel_count):
-            raise IndexError("Neplatný index kanálu.")
+            print(f"[DMXDevice:{self.name}] Chyba: kanál {index} je mimo rozsah (0-{self.channel_count-1})")
+            return
         self.system.write_channel(self.start_channel + index, value)
         self.values[index] = value
-        print(f"[{self.name}] Kanál {index+1} = {value}")
+        print(f"[DMXDevice:{self.name}] Kanál {index} = {value}")
