@@ -17,6 +17,20 @@ Raspberry PI 5 - control unit
 * deactivate
 
 ## JSON protocol
+#### Kombinace více příkazů:
+```
+    {
+        "commands":
+        [
+            {
+                "action": "action1",
+                "param1": ...
+            },
+            ...
+        ]
+    }
+```
+#### Jednotlivé příkazy:
 ```
     {
         "action": "reset_errors"
@@ -42,5 +56,18 @@ Raspberry PI 5 - control unit
         "action": "set_channels", 
         "device": "FrontLight", 
         "values": [255, 128, 0, 0]
+    }
+```
+```
+    {
+        "action": "add_device",
+        "device": "BackLight",
+        "start_channel": 109,
+        "channel_count": 4
+    }
+```
+```
+    {
+        "action": "list_devices"
     }
 ```

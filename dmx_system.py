@@ -57,6 +57,10 @@ class DMXSystem:
         Vytvoří nové zařízení a přidá ho do seznamu systému.
         Vrací objekt DMXDevice.
         """
+        # Kontrola duplicit
+        if any(d.name == name for d in self.devices):
+            print(f"[DMXSystem] Zařízení s názvem '{name}' již existuje.")
+            return
         device = DMXDevice(system=self, name=name, start_channel=start_channel, channel_count=channel_count)
         self.devices.append(device)
         print(f"[DMXSystem] Přidáno zařízení: {device}")

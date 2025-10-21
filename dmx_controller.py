@@ -12,27 +12,35 @@ class DMXController:
 
     def handle_command(self, json_str: str):
         """
-        Zpracuje příkaz ve formátu JSON.
-
-        Příklad příkazu:
-        {"action": "set_value", "device": "FrontLight", "channel": 2, "value": 128}
-        {"action": "set_all", "device": "Motor", "value": 200}
-        {"action": "reset_errors"}
+        Zpracuje JSON, který může obsahovat jeden příkaz nebo pole příkazů.
         """
         try:
-            cmd = json.loads(json_str)
+            data = json.loads(json_str)
         except json.JSONDecodeError:
             print("[Controller] Chybný JSON:", json_str)
             return
 
-        action = cmd.get("action")
+        # Pokud JSON obsahuje více příkazů
+        if "commands" in data:
+            for cmd in data["commands"]:
+                self._execute_single_command(cmd)
+        else:
+            # Jednoduchý single-command JSON
+            self._execute_single_command(data)
 
+
+    def _execute_single_command(self, cmd: dict):
+        action = cmd.get("action")
         if action == "set_value":
             self._set_value(cmd)
         elif action == "set_all":
             self._set_all(cmd)
         elif action == "set_channels":
             self._set_channels(cmd)
+        elif action == "add_device":
+            self._add_device(cmd)
+        elif action == "list_devices":
+            self._list_devices(cmd)
         elif action == "reset_errors":
             self.system.error_manager.reset_errors(lambda: True)
         else:
@@ -80,3 +88,26 @@ class DMXController:
         device.write(values[:max_len])
         print(f"[Controller] Zařízení {device.name} nastaveno hodnotami {values[:max_len]}")
 
+    def _add_device(self, cmd: dict):
+        name = cmd.get("device")
+        start = cmd.get("start_channel")
+        count = cmd.get("channel_count")
+
+        if not all([name, start, count]):
+            print("[Controller] Neúplný příkaz pro add_device:", cmd)
+            return
+
+        device = self.system.add_device(name=name, start_channel=start, channel_count=count)
+        if device is None:
+            print(f"[Controller] Nové zařízení {name} nebylo přidáno.")
+            return
+        print(f"[Controller] Přidáno nové zařízení: {device.name}")
+    
+    def _list_devices(self, cmd: dict):
+        if not self.system.devices:
+            print("[Controller] Žádná zařízení nejsou registrována.")
+            return
+
+        print("[Controller] Seznam zařízení:")
+        for device in self.system.devices:
+            print(f" - {device.name}, kanály {device.start_channel}-{device.start_channel + device.channel_count - 1}")
