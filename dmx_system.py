@@ -21,7 +21,6 @@ class DMXSystem:
             cls._instance._initialized = False      # 3) příznak, že ještě není inicializována
         return cls._instance                        # 4) vrátí buď novou, nebo už existující instanci   
 
-
     def __init__(self, ip, port, unit, timeout=2):
         if self._initialized: return
         self.ip = ip
@@ -43,7 +42,6 @@ class DMXSystem:
             exit(-1)
         return 0
 
-
     def disconnect(self):
         self.client.close()
 
@@ -64,7 +62,6 @@ class DMXSystem:
         print(f"[DMXSystem] Přidáno zařízení: {device}")
         return device
 
-
     def _read_variable_from_file(self):
         try:
             with open(self.infile, "r") as f:
@@ -74,7 +71,6 @@ class DMXSystem:
         except Exception as e:
             print(f"Chyba při čtení souboru: {e}")
             return None
-
 
     def read_channels(self, start: int, count: int) -> list[int]:
         """
@@ -88,7 +84,6 @@ class DMXSystem:
             raise RuntimeError(f"Chyba při čtení registrů {start}-{start+count-1}: {rr}")
         return rr.registers
 
-
     def write_channel(self, address: int, value: int):
         """
         Zapíše jednu hodnotu do registru Modbus.
@@ -97,7 +92,6 @@ class DMXSystem:
         if wr.isError():
             raise RuntimeError(f"Chyba při zápisu do registru {address}: {wr}")
         print(f"[DMXSystem] Zapsáno: registr {address} = {value}")
-
 
     def write_channels(self, start: int, values: list[int]):
         """

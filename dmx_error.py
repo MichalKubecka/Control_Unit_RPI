@@ -18,7 +18,8 @@ class DMXErrorManager:
         """Nastaví příslušný bit chyby."""
         bit = self.ERROR_BITS.get(name)
         if bit is None:
-            raise ValueError(f"Neznámý typ chyby: {name}")
+            print(f"[ErrorManager] Neznámý typ chyby: {name}")
+            return
         self.LED_ERR |= (1 << bit)
 
     def clear_error(self, bitmask: int):

@@ -6,10 +6,8 @@ class DMXDevice:
         self.channel_count = channel_count
         self.values = [0] * channel_count
 
-
     def read(self):
         self.values = self.system.read_channels(self.start_channel, self.channel_count)
-
 
     def write(self, values: list[int]):
         """
@@ -20,7 +18,6 @@ class DMXDevice:
         self.system.write_channels(self.start_channel, values)
         self.values = values
         print(f"[{self.name}] Zápis: {self.values}")
-
 
     def set_value(self, index: int, value: int):
         """

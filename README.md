@@ -15,3 +15,32 @@ Raspberry PI 5 - control unit
 * pip3 install -r requirements.txt
 * make
 * deactivate
+
+## JSON protocol
+```
+    {
+        "action": "reset_errors"
+    }
+```
+```
+    {
+        "action": "set_value", 
+        "device": "FrontLight", 
+        "channel": 2, 
+        "value": 128
+    }
+```
+```
+    {
+        "action": "set_all", 
+        "device": "FrontLight", 
+        "value": 128
+    }
+```
+```
+    {
+        "action": "set_channels", 
+        "device": "FrontLight", 
+        "values": [255, 128, 0, 0]
+    }
+```
