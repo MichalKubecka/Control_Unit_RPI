@@ -16,7 +16,7 @@ Raspberry PI 5 - control unit
 * make
 * deactivate
 
-## JSON protocol
+## JSON protocol + příklady
 #### Kombinace více příkazů:
 ```
     {

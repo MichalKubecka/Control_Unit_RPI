@@ -5,6 +5,7 @@ import gpiozero as gpio
 from adafruit_pca9685 import PCA9685
 
 from dmx_device import DMXDevice
+from dmx_error import DMXErrorManager
 
 status_meaning = {
     0: "data jsou platná",
@@ -15,18 +16,18 @@ class DMXSystem:
     """ Singleton class """
     _instance = None
 
-    def __new__(cls, ip, port, unit, timeout=2):
+    def __new__(cls, ip, port, timeout=2):
         if cls._instance is None:                   # 1) Pokud ještě instance neexistuje
             cls._instance = super().__new__(cls)    # 2) vytvoř novou instanci
             cls._instance._initialized = False      # 3) příznak, že ještě není inicializována
         return cls._instance                        # 4) vrátí buď novou, nebo už existující instanci   
 
-    def __init__(self, ip, port, unit, timeout=2):
+    def __init__(self, ip, port, timeout=2):
         if self._initialized: return
         self.ip = ip
         self.port = port
-        self.unit = unit
         self.client = ModbusTcpClient(host=ip, port=port, timeout=timeout)
+        self.error_manager = DMXErrorManager()
         self.devices = []
         self.infile = 'input.txt'
         self.NEW_VALUE = None
@@ -39,7 +40,8 @@ class DMXSystem:
     def connect(self):
         if not self.client.connect():
             raise RuntimeError("Nepodařilo se navázat Modbus TCP spojení.")
-            exit(-1)
+            self.error_manager.set_error("CONNECTION")
+            return -1
         return 0
 
     def disconnect(self):
@@ -60,7 +62,7 @@ class DMXSystem:
         # Kontrola duplicit
         if any(d.name == name for d in self.devices):
             print(f"[DMXSystem] Zařízení s názvem '{name}' již existuje.")
-            return
+            return None
         device = DMXDevice(system=self, name=name, start_channel=start_channel, channel_count=channel_count)
         self.devices.append(device)
         print(f"[DMXSystem] Přidáno zařízení: {device}")
@@ -83,7 +85,7 @@ class DMXSystem:
         :param count: počet registrů ke čtení
         :return: seznam hodnot registrů
         """
-        rr = self.client.read_holding_registers(address=start, count=count, device_id=self.unit)
+        rr = self.client.read_holding_registers(address=start, count=count)
         if rr.isError():
             raise RuntimeError(f"Chyba při čtení registrů {start}-{start+count-1}: {rr}")
         return rr.registers
@@ -92,7 +94,7 @@ class DMXSystem:
         """
         Zapíše jednu hodnotu do registru Modbus.
         """
-        wr = self.client.write_register(address=address, value=value, device_id=self.unit)
+        wr = self.client.write_register(address=address, value=value)
         if wr.isError():
             raise RuntimeError(f"Chyba při zápisu do registru {address}: {wr}")
         print(f"[DMXSystem] Zapsáno: registr {address} = {value}")

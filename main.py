@@ -6,7 +6,7 @@ import time
 
 
 # ----- Setup -------------------------
-dmx = DMXSystem(ip="192.168.8.60", port=502, unit=1)
+dmx = DMXSystem(ip="192.168.8.60", port=502)
 dmx.connect()
 
 # Inicializace správce chyb
